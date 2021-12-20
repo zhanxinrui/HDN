@@ -1,4 +1,4 @@
-# HDN
+# Homography Decomposition Networks for Planar Object Tracking
 
 This project is the offical PyTorch implementation of HDN(Homography Decomposition Networks) for planar object tracking.
 (AAAI 2022, Accepted)

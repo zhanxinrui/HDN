@@ -16,6 +16,10 @@ This document contains detailed instructions for installing dependencies for hdn
 * ....
 
 ## Step-by-step instructions
+#### Clone our project 
+```bash
+git clone https://github.com/zhanxinrui/HDN.git
+```
 
 #### Create environment and activate
 
