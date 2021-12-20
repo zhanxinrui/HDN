@@ -1,0 +1,103 @@
+META_ARC: "hdn_r50_l234_pot"
+
+BACKBONE:
+    TYPE: "resnet50"
+    KWARGS:
+        used_layers: [2, 3, 4]
+    PRETRAINED: 'pretrained_models/resnet50.model'
+    TRAIN_LAYERS: ['layer2', 'layer3', 'layer4']
+    TRAIN_EPOCH: 10
+    LAYERS_LR: 0.1
+
+
+ADJUST:
+    ADJUST: True
+    TYPE: "AdjustAllLayer"
+    KWARGS:
+        in_channels: [512, 1024, 2048]
+        out_channels: [256, 256, 256]
+#        out_channels: [256, 256, 256]
+#        out_channels: [512, 512, 512]
+
+
+BAN:
+    BAN: True
+    TYPE: 'MultiBAN'
+    KWARGS:
+        in_channels: [256, 256, 256]
+        cls_out_channels: 2  # if use sigmoid cls, cls_out_channel = 1 else 2
+        weighted: True
+
+BAN_LP:
+    BAN: True
+    TYPE: 'MultiCircBAN'
+    KWARGS:
+        in_channels: [256, 256, 256]
+        cls_out_channels: 2  # if use sigmoid cls, cls_out_channel = 1 else 2
+        weighted: True
+POINT:
+    STRIDE: 8
+    STRIDE_LP: 8
+
+TRACK:
+    TYPE: 'hdnTracker'
+    WINDOW_INFLUENCE: 0.1632532824922313  # POT
+    PENALTY_K: 0.08513642556896711  # POT
+    LR: 0.44418184746462425  # POT
+    BASE_SC_FAC: 2.0     #search sscale factor
+    SCALE_SCORE_THRESH: 0.5   #over this value, weneed to enlarge the region of search
+    EXEMPLAR_SIZE: 127
+    INSTANCE_SIZE: 255
+    BASE_SIZE: 8
+    CONTEXT_AMOUNT: 0.5 #越大crop越小
+
+
+TRAIN:
+    EPOCH: 20
+    START_EPOCH: 0 # 0 or resume checkpoint
+    BATCH_SIZE: 28
+    BASE_LR: 0.005
+    CLS_WEIGHT: 1.0
+    LOC_WEIGHT: 1.0
+    RESUME: '' # '' or 'snapshot/checkpoint_e.pth'
+
+    LR:
+        TYPE: 'log'
+        KWARGS:
+            start_lr: 0.005
+            end_lr: 0.00005
+    LR_WARMUP:
+        TYPE: 'step'
+        EPOCH: 5
+        KWARGS:
+            start_lr: 0.001
+            end_lr: 0.005
+            step: 1
+
+DATASET:
+    NAMES:
+    - 'VID'
+    - 'YOUTUBEBB'
+    - 'COCO'
+    - 'DET'
+    - 'GOT10K'
+    - 'LASOT'
+
+    VIDEOS_PER_EPOCH: 1000000
+
+    TEMPLATE:
+        SHIFT: 4
+        SCALE: 0.05
+        BLUR: 0.0
+        FLIP: 0.0
+        COLOR: 1.0
+
+    SEARCH:
+        SHIFT: 64
+        SCALE: 0.18
+        BLUR: 0.2
+        FLIP: 0.0
+        COLOR: 1.0
+
+    NEG: 0.2
+    GRAY: 0.0

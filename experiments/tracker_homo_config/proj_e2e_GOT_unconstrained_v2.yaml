@@ -1,0 +1,170 @@
+#accept supervised or unsupervised data in a batch
+META_ARC: "hdn_r50_l234_pot"
+BACKBONE_HOMO:
+  TYPE: "resnet34"
+  KWARGS:
+    used_layers: [4] # in deep-homo  default use only the last layer
+  TRAIN_LAYERS: ['layer2', 'layer3', 'layer4']
+  TRAIN_EPOCH: 0
+  LAYERS_LR: 0.1
+  IF_PRETRAINED: True # False
+
+BACKBONE:
+  TYPE: "resnet50"
+  KWARGS:
+    used_layers: [2, 3, 4]
+  PRETRAINED: 'pretrained_models/resnet50.model'
+  TRAIN_LAYERS: ['layer2', 'layer3', 'layer4']
+  TRAIN_EPOCH: 40
+  LAYERS_LR: 0.1
+  IF_PRETRAINED: False #True
+
+
+ADJUST:
+  ADJUST: True
+  TYPE: "AdjustAllLayer"
+  KWARGS:
+    in_channels: [512, 1024, 2048]
+    out_channels: [256, 256, 256]
+
+BAN:
+  BAN: True
+  TYPE: 'MultiBAN'
+  KWARGS:
+    in_channels: [256, 256, 256]
+    cls_out_channels: 2  # if use sigmoid cls, cls_out_channel = 1 else 2
+    weighted: True
+
+BAN_LP:
+  BAN: True
+  TYPE: 'MultiCircBAN'
+  KWARGS:
+    in_channels: [256, 256, 256]
+    cls_out_channels: 2  # if use sigmoid cls, cls_out_channel = 1 else 2
+    weighted: True
+
+POINT:
+  STRIDE: 8
+  STRIDE_LP: 8
+
+TRACK:
+  TYPE: 'hdnTrackerHomoProje2e'
+  WINDOW_INFLUENCE: 0.1632532824922313  # POT 0.1632532824922313
+  PENALTY_K: 0.08513642556896711  # VOT2018
+  LR: 0.44418184746462425  # VOT2018
+  BASE_SC_FAC: 2.0     #search sscale factor
+  SCALE_SCORE_THRESH: 0.5   #over this value, we need to enlarge the region of search
+  EXEMPLAR_SIZE: 127
+  INSTANCE_SIZE: 255
+  BASE_SIZE: 8
+  CONTEXT_AMOUNT: 0.5 #0.0 the larger value the larger patch range
+
+
+TRAIN:
+  OBJ: 'ALL' #  'ALL', 'SIM', 'HOMO', 'LP', we have simplified the procedure, and there is only ALL option
+  MODEL_TYPE: 'E2E'
+  PRINT_FREQ: 30
+  WEIGHTED_MAP_LP: False
+  EPOCH: 30 #30 best
+  START_EPOCH: 0 # 0 or resume checkpoint
+  BATCH_SIZE: 32 #1
+  HOMO_START_LR: 0.0002
+  BASE_LR: 0.0002 #0.0003 0.00005 0.0002
+  OUTPUT_SIZE_LP: 13
+  CLS_WEIGHT: 1.0
+  LOC_WEIGHT: 1.0
+  FEATURE_DIS_WEIGHT: 0.005 #orign: 1.0
+  #  RESUME: 'experiments/tracker_homo_config/snapshot/xxx.pth'
+  #  RESUME: 'experiments/hdn_r50_l234/snapshot/pot_occ_top_k_e4.pth' # simi
+  #  RESUME: 'model/model_vot.pth' # hdn
+  NUM_WORKERS: 2
+  DISTRIBUTED: True
+  LR:
+    TYPE: 'log'
+    KWARGS:
+      start_lr: 0.0012
+      end_lr: 0.000002
+  LR_WARMUP:
+    #    WARMUP: False
+    TYPE: 'step'
+    EPOCH: 1 #1
+    KWARGS:
+      start_lr: 0.001
+      end_lr: 0.002
+      step: 1
+  SAVE_LOGS: False
+  LOG_GRADS: False
+
+DATASET:
+  #  POT_E2E:
+  #    SUPERVISED_FRAME_RANGE: 0
+  #    UNSUPERVISED_FRAME_RANGE: 3
+  NAMES:
+
+    - 'GOT10K_E2E'
+    - 'GOT10K_E2E_UNSUP'
+  #    - 'POT_E2E'
+  #    - 'POT_E2E_UNSUP'
+  #    - 'POT'
+    - 'COCO14'
+  #
+  VAL_NAMES:
+    - 'GOT_HOMO_VAL'
+  TYPE: 'unconstrained_v2_dataset' #'simi_aug_homo_dataset semi_supervised_dataset_debug
+  VIDEOS_PER_EPOCH: 100000
+  TEMPLATE:
+    SHIFT: 0 #4
+    SCALE: 1.05
+    BLUR: 0.02 #0.1
+    FLIP: 0.0
+    ROTATION: 0.05
+    COLOR: 0.8
+    DISTORTION: 0.0
+    AFFINE_A: 0.0
+    AFFINE_C: 0.0
+    AFFINE_D: 0.0
+    UNSUPERVISED:
+      SHIFT: 5 #4
+      SCALE: 1.05
+      BLUR: 0.02 #0.1
+      FLIP: 0.0
+      ROTATION: 0.05 #0.01 0.8 0.4 0.0
+      COLOR: 0.8
+      DISTORTION: 0.0
+      AFFINE_A: 0.0
+      AFFINE_C: 0.0
+      AFFINE_D: 0.0
+      IMG_COMP_ALPHA: 1.0
+      IMG_COMP_BETA: 0.0
+      IMG_COMP_GAMMA: 0.0
+  SEARCH:
+    SHIFT: 32
+    SCALE: 1.38
+    BLUR: 0.02
+    FLIP: 0.0
+    COLOR: 0.8
+    ROTATION: 0.65
+    DISTORTION: 0.0015
+    AFFINE_A: 0.1
+    AFFINE_C: 0.15
+    AFFINE_D: 0.0
+    UNSUPERVISED:
+      SHIFT: 32
+      SCALE: 1.28
+      BLUR: 0.02
+      FLIP: 0.0
+      COLOR: 0.8
+      ROTATION: 0.7
+      DISTORTION: 0.0
+      AFFINE_A: 0.0
+      AFFINE_C: 0.0
+      AFFINE_D: 0.0
+      IMG_COMP_ALPHA: 1.0
+      IMG_COMP_BETA: 0.0
+      IMG_COMP_GAMMA: 0.0
+  OCC: 0.3
+  NEG: 0.2
+  GRAY: 0.0
+  LIGHT: 0.06
+  DARK: 0.06
+
