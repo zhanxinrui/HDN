@@ -49,6 +49,7 @@ __C.BASE.DATA_ROOT = /xxx/xxx   #/home/Kay/Data/Dataset/        (path to other d
 
 ### Demo
 **Planar Object Tracking and its applications**
+
 we provide 4 modes: 
 * tracking: tracking planar object with not less than 4 points in the object.
 * img_replace: replacing planar object with image .
